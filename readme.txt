@@ -1,4 +1,4 @@
-=== Example Meta Boxes (Nouveau) ===
+=== NOUVEAU Meta Boxes Example ===
 Contributors: veraxus
 Tags: admin, meta box, editor, example, developer, nouveau
 Requires at least: 3.6

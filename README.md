@@ -1,4 +1,4 @@
-## Example Meta Boxes (Nouveau) ##
+## NOUVEAU Meta Boxes Example ##
 
 A simple, functional WordPress plugin that serves as an example for creating new meta boxes for use on admin editor screens.
 
