@@ -20,10 +20,10 @@ class NV_Example_Meta_Boxes extends WP_Widget
     public static function init()
     {
         // Add the meta boxes
-        add_action( 'add_meta_boxes', array('NV_Example_Meta_Boxes','register') );
+        add_action( 'add_meta_boxes', array( __CLASS__, 'register' ) );
 
         // Process meta boxes on post save
-        add_action( 'save_post', array('NV_Example_Meta_Boxes','metabox_save') );
+        add_action( 'save_post', array( __CLASS__, 'metabox_save' ) );
     }
 
     /**
