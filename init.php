@@ -4,7 +4,7 @@ Plugin Name: NOUVEAU Meta Boxes Example
 Plugin URI: http://nouveauframework.com/downloads/plugins/
 Description: A simple, functional WordPress plugin that serves as an example for creating new meta boxes for use on admin editor screens.
 Author: Matt Van Andel
-Version: 1.0
+Version: 0.1
 Author URI: http://mattstoolbox.com/
 License: GPLv2 or later
 */
