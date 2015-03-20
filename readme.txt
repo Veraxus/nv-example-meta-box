@@ -1,9 +1,11 @@
 === NOUVEAU Meta Boxes Example ===
-Contributors: veraxus
+Contributors: Veraxus
 Tags: admin, meta box, editor, example, developer, nouveau
+Requires PHP: 5.3
 Requires at least: 3.6
-Tested up to: 3.8
-Stable tag: 0.1
+Tested up to: 4.2
+Stable tag: 0.2
+GitHub Plugin URI: veraxus/nv-example-meta-box
 
 A simple, functional WordPress plugin that serves as an example for creating new meta boxes for use on admin editor screens.
 
