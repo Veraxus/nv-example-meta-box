@@ -60,7 +60,7 @@ class NV_Example_Meta_Boxes extends WP_Widget
      *
      * @param $post
      */
-    public function metabox( $post )
+    public static function metabox( $post )
     {
         require_once 'templates/metabox.php';
     }
@@ -70,7 +70,7 @@ class NV_Example_Meta_Boxes extends WP_Widget
      *
      * @param $post_id
      */
-    public function metabox_save( $post_id )
+    public static function metabox_save( $post_id )
     {
         // Validate first...
         if ( ! self::verify_save('nv_example_meta_box_nonce','save_nv_example_meta_box',$post_id) ) {
