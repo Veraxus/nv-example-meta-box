@@ -3,120 +3,152 @@
 Plugin Name: NOUVEAU Meta Boxes Example
 Plugin URI: http://nouveauframework.com/downloads/plugins/
 Description: A simple, functional WordPress plugin that serves as an example for creating new meta boxes for use on admin editor screens.
-Author: Matt Van Andel
-Version: 0.1
+Author: Matt van Andel
+Version: 1.0
 Author URI: http://mattstoolbox.com/
 License: GPLv2 or later
 */
 
+namespace NV\Plugins;
+
 NV_Example_Meta_Boxes::init();
 
 /**
- * Our Example Widget class
+ * Example class for creating custom meta boxes in WordPress. Uses a little magic, but can also be overridden for
+ * folks who want a little more control.
+ * 
+ * You can add custom meta boxes in just two steps…
+ * 
+ * 1. Register your new meta boxes using add_meta_box() within the register_metaboxes() method below.
+ * 2. Register any settings/form elements you want using MetaBox::register_setting() within the register_settings() method below.
+ * 3. Customize your CSS and Javascript, if desired, in the assets folder.
  */
-class NV_Example_Meta_Boxes extends WP_Widget
-{
+class NV_Example_Meta_Boxes {
 
-    public static function init()
-    {
-        // Add the meta boxes
-        add_action( 'add_meta_boxes', array( __CLASS__, 'register' ) );
+	/**
+	 * STEP 1: REGISTER YOUR METABOXES HERE…
+	 * 
+	 * Register any new meta boxes here. Use the magic callback array( '\NV\Plugins\MetaBox', 'build_metabox' ) to
+	 * automatically create a new 
+	 * 
+	 * Note: These examples fetch all post types and add meta boxes to all of them. Customize to your own needs.
+	 *
+	 * http://codex.wordpress.org/Function_Reference/add_meta_box
+	 */
+	public static function register_metaboxes() {
+		//Get all registered post types...
+		$screens = get_post_types();
 
-        // Process meta boxes on post save
-        add_action( 'save_post', array( __CLASS__, 'metabox_save' ) );
-    }
+		// Loop through the post types and add meta box to each
+		foreach ( $screens as $screen ) {
 
-    /**
-     * Used by the add_meta_boxes hook to register new meta boxes
-     *
-     * http://codex.wordpress.org/Function_Reference/add_meta_box
-     */
-    public static function register()
-    {
-        //Get all registered post types...
-        $screens = get_post_types();
+			// EXAMPLE 1: Add a meta box using the magic form builder function
+			add_meta_box(
+				'magic-meta-box',   // HTML slug for box id
+				__( 'Magic Custom Meta Box', 'nvLangScope' ), // Visible title
+				array( '\NV\Plugins\MetaBox', 'build_metabox' ), // Magic callback. Used to render the meta box HTML
+				$screen,            // The slug of the post type you want to add this meta box to.
+				'side',             // Context. Where on the screen should this show up? Options: 'normal', 'advanced', or 'side'
+				'high'              // Priority. Options: 'high', 'core', 'default' or 'low'
+			);
 
-        //OR Specify specific post types...
-        //$screens = array( 'post', 'page' );
+			// EXAMPLE 2: Add a meta box using a handcrafted metabox
+			add_meta_box(
+				'custom-meta-box',  // HTML slug for box id
+				__( 'Custom Meta Box', 'nvLangScope' ), // Visible title
+				function ( $post, $args ) { // Anonymous function to include metabox template
+					include 'templates/custom_metabox.php';
+				},
+				$screen,            // The slug of the post type you want to add this meta box to.
+				'side',             // Context. Where on the screen should this show up? Options: 'normal', 'advanced', or 'side'
+				'high'              // Priority. Options: 'high', 'core', 'default' or 'low'
+			);
 
-        // Loop through the post types and add meta box to each
-        foreach ( $screens as $screen ) {
-
-            add_meta_box(
-                'meta-box-id',   //HTML id for box
-                __( 'Meta Box Title', 'nvLangScope' ), // Visible title
-                array('NV_Example_Meta_Boxes','metabox'), //Callback. Used to render the meta box HTML
-                $screen, //Post type. The post type to add to
-                'side', //Context. Where on the screen should this show up? Options: 'normal', 'advanced', or 'side'
-                'default' //Priority. Options: 'high', 'core', 'default' or 'low'
-            );
-        }
-    }
-
-    /**
-     * Loads a template file which renders the meta box content.
-     *
-     * Doing this allows us to keep HTML out of the class.
-     *
-     * @param $post
-     */
-    public function metabox( $post )
-    {
-        require_once 'templates/metabox.php';
-    }
-
-    /**
-     * This function handles saving for the metabox data.
-     *
-     * @param $post_id
-     */
-    public function metabox_save( $post_id )
-    {
-        // Validate first...
-        if ( ! self::verify_save('nv_example_meta_box_nonce','save_nv_example_meta_box',$post_id) ) {
-            return $post_id;
-        }
-
-        // Update the meta field in the database.
-        update_post_meta(
-            $post_id,
-            '_nv_example_meta_field',
-            sanitize_text_field( $_POST['example-meta-field'] )
-        );
-    }
+		}
+	}
 
 
-    /**
-     * Performs meta box save validation
-     *
-     * @param $nonce_name
-     * @param $none_action
-     * @param $post_id
-     *
-     * @return bool
-     */
-    public static function verify_save( $nonce_name, $none_action, $post_id )
-    {
-        // VALIDATE NONCE & AUTOSAVE
-        if ( ! isset( $_POST[$nonce_name] ) ) {
-            return false;
-        }
-        if ( ! wp_verify_nonce( $_POST[$nonce_name], $none_action ) ) {
-            return false;
-        }
-        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-            return false;
-        }
+	/**
+	 * STEP 2: REGISTER YOUR SETTINGS…
+	 * 
+	 * Register your settings here with MetaBox::register_setting(). Once registered, saving is handled for you and you
+	 * have access to functions that can automatically generate metaboxes and/or fields.
+	 * 
+	 * Examples are provided below… delete them and create your own.
+	 * 
+	 * Note: The order of registration controls the order of display.
+	 */
+	public static function register_settings() {
 
-        // VALIDATE PERMISSIONS
-        if ( ! current_user_can( 'edit_page', $post_id ) ) {
-            return false;
-        }
+		// AUTOMAGIC META BOX
+		MetaBox::register_setting( '_nv_example_meta_field', 'magic-meta-box', array(
+			'label'       => __( 'Example Field:', 'nvLangScope' ),
+			'placeholder' => __( 'Enter a value…', 'nvLangScope' ),
+		) );
+		MetaBox::register_setting( '_nv_example_meta_checkboxes', 'magic-meta-box', array(
+			'type'  => 'checkbox',
+			'label' => __( 'Example Checklist:', 'nvLangScope' ),
+			'list'  => array(
+				'cb1' => __( 'Item 1', 'nvLangScope' ),
+				'cb2' => __( 'Item 2', 'nvLangScope' ),
+				'cb3' => __( 'Item 3', 'nvLangScope' ),
+			),
+		) );
+		MetaBox::register_setting( '_nv_example_meta_radio', 'magic-meta-box', array(
+			'type'  => 'radio',
+			'label' => __( 'Example Radio List:', 'nvLangScope' ),
+			'list'  => array(
+				'radio1' => __( 'Item 1', 'nvLangScope' ),
+				'radio2' => __( 'Item 2', 'nvLangScope' ),
+				'radio3' => __( 'Item 3', 'nvLangScope' ),
+			),
+			'value' => 'radio1', // which list item(s) to select by default
+		) );
+		MetaBox::register_setting( '_nv_example_meta_textarea', 'magic-meta-box', array(
+			'type'  => 'textarea',
+			'label' => __( 'Example Textarea:', 'nvLangScope' ),
+			'placeholder' => __('Your text goes here!','nvLangScope'),
+			'howto' => __( 'You can add a paragraph of help text below any setting.', 'nvLangScope' ),
+		) );
 
-        // EVERYTHING CHECKS OUT
-        return true;
-    }
+		// CUSTOM (HAND-CRAFTED) META BOX
+		MetaBox::register_setting( '_nv_example_meta_field2', 'custom-meta-box', array(
+			'label'       => __( 'Example Field:', 'nvLangScope' ),
+			'placeholder' => __( 'Enter a value…', 'nvLangScope' ),
+		) );
+		MetaBox::register_setting( '_nv_example_meta_dropdown', 'custom-meta-box', array(
+			'type'  => 'select',
+			'label' => __( 'Example Dropdown:', 'nvLangScope' ),
+			'list'  => array(
+				''  => __( '-- Select One --', 'nvLangScope' ),
+				'1' => __( 'Option 1', 'nvLangScope' ),
+				'2' => __( 'Option 2', 'nvLangScope' ),
+			),
+		) );
 
+	}
+
+	/**
+	 * Constructor. Generally, you don't need to mess with this.
+	 */
+	public static function init() {
+
+		require 'includes/class.NV.Plugins.MetaBox.php';
+		require 'includes/class.NV.Plugins.MetaBox.Html.php';
+		require 'includes/class.NV.Plugins.MetaBox.HtmlTags.php';
+
+		// Register metabox settings / fields
+		self::register_settings();
+
+		// Add the meta boxes
+		add_action( 'add_meta_boxes', array( __CLASS__, 'register_metaboxes' ) );
+
+		// Enqueue optionals styles & js
+		add_action( 'admin_enqueue_scripts', function ( $hook ) {
+			wp_enqueue_script( 'nv_meta_scripts', plugin_dir_url( __FILE__ ) . 'assets/js/scripts.js' );
+			wp_enqueue_style( 'nv_meta_styles', plugin_dir_url( __FILE__ ) . 'assets/css/styles.css' );
+		} );
+	}
 
 
 }

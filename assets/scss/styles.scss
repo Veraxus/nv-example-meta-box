@@ -1,0 +1,23 @@
+/*****************************************************
+ * You can add your own styles here to change the look
+ * of your custom meta boxes!
+ *****************************************************/
+
+.postbox {
+    .magic-metabox {
+        label {
+            display: block;
+        }
+        .howto {
+            margin-top: -.5rem;
+        }
+    }
+}
+
+#side-sortables {
+    .magic-metabox {
+        input[type="text"], select, textarea {
+            width: 100%;
+        }
+    }
+}
