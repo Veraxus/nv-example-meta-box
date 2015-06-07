@@ -74,7 +74,19 @@ class NV_Example_Meta_Boxes {
 	 * Register your settings here with MetaBox::register_setting(). Once registered, saving is handled for you and you
 	 * have access to functions that can automatically generate metaboxes and/or fields.
 	 * 
-	 * Examples are provided below… delete them and create your own.
+	 * Examples are provided below. The register_setting() method takes 3 arguments…
+	 * 
+	 * $meta_key    Required. String. The database key the data will be saved under & the id and name attributes for form elements.
+	 * $box_id      Required. String. The id/slug of the meta box that this setting should be associated with.
+	 * $args        Optional. Array.  Additional customization of your setting as an associative array. Options include…
+	 * 
+	 *   'label'        The visible text to use for the form elements <label>
+	 *   'type'         The type of form field to use with this setting. Valid values include: text, textarea, select, radio, checkbox, hidden
+	 *   'placeholder'  Text to use as the form elements HTML5 placeholder attribute.
+	 *   'value'        The default value or selection for the form element.
+	 *   'list'         An associative array of items to include in radio, checkbox, and select elements, in 'value' => 'Display Text' format
+	 *   'howto'        Help text to display beneath the form element.
+	 *   'save'         Whether or not the setting should be automagically saved by the plugin.
 	 * 
 	 * Note: The order of registration controls the order of display.
 	 */

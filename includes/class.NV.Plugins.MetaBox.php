@@ -2,6 +2,8 @@
 
 namespace NV\Plugins;
 
+MetaBox::init();
+
 /**
  * Class MetaBoxBuilder
  *
@@ -20,6 +22,9 @@ namespace NV\Plugins;
  */
 class MetaBox {
 
+	/**
+	 * Initialize globals and magic hooks.
+	 */
 	public static function init() {
 		global $NOUVEAU;
 
@@ -28,19 +33,19 @@ class MetaBox {
 
 		// Use standard hooks
 		add_action( 'save_post', array( __CLASS__, 'save_metaboxes' ) );
-
 	}
 
 
 	/**
-	 * @param       $meta_key
-	 * @param       $box_id
-	 * @param array $args
+	 * Used to register your custom settings. 
+	 * @param       $meta_key The key that will be used to save the data in the db (also used for id and name attributes)
+	 * @param       $box_id   The slug of the metabox id that this should be attached to if using magic.
+	 * @param array $args     Arguments used to construct your element.
 	 */
 	public static function register_setting( $meta_key, $box_id, $args = array() ) {
 		global $NOUVEAU;
 
-		$args                                         = array_merge( array(
+		$args = array_merge( array(
 			'box_id'      => $box_id,
 			'meta_key'    => $meta_key,
 			// Visible label for this field
@@ -315,5 +320,3 @@ class MetaBox {
 
 
 }
-
-MetaBox::init();
