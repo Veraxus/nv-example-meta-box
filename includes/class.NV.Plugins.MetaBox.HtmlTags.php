@@ -129,7 +129,6 @@ class HtmlTags extends Html {
 				'id'   => ( ! empty( $name ) ) ? $name : parent::randomId(),
 				'name' => $name,
 				'type' => 'text',
-				'value'=> '',
 			),
 			$atts
 		);

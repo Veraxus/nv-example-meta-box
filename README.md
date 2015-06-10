@@ -5,7 +5,7 @@
 **Requires PHP:** 5.3+  
 **Requires at least:** 3.6  
 **Tested up to:** 4.3  
-**Stable tag:** 1.0  
+**Stable tag:** 1.1  
 **GitHub Plugin URI:** veraxus/nv-example-meta-box  
 
 A simple, functional WordPress plugin that serves as an example for creating new meta boxes for use on admin editor screens.
@@ -39,6 +39,11 @@ This example is part of the NOUVEAU WordPress framework. For more great starting
 
 
 ## Changelog ##
+
+### 1.1 (2015/06/10) ###
+* Added serialization support to MetaBox::register_setting()
+* Added a serialization example to init.php
+* Bug fix: Single checkboxes now save & load correctly
 
 ### 1.0 (2015/06/06) ###
 * New magic metabox API! Create custom admin meta boxes faster than ever!

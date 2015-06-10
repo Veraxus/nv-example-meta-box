@@ -8,7 +8,7 @@
 <div class="magic-metabox">
 	<p>
 		<!-- Creating a field manually! -->
-		<label for="example-field"><strong><?php _e( 'Example Field:', 'nvLangScope' ); ?></strong></label>
+		<label for="example-field"><strong><?php _e( 'Example Field', 'nvLangScope' ); ?></strong></label>
 		<input
 			type="text"
 			id="_nv_example_meta_field2"

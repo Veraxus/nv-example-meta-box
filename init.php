@@ -4,7 +4,7 @@ Plugin Name: NOUVEAU Meta Boxes Example
 Plugin URI: http://nouveauframework.com/downloads/plugins/
 Description: A simple, functional WordPress plugin that serves as an example for creating new meta boxes for use on admin editor screens.
 Author: Matt van Andel
-Version: 1.0
+Version: 1.1
 Author URI: http://mattstoolbox.com/
 License: GPLv2 or later
 */
@@ -87,19 +87,22 @@ class NV_Example_Meta_Boxes {
 	 *   'list'         An associative array of items to include in radio, checkbox, and select elements, in 'value' => 'Display Text' format
 	 *   'howto'        Help text to display beneath the form element.
 	 *   'save'         Whether or not the setting should be automagically saved by the plugin.
+	 *   'serialize'    Serialize the setting under this key instead of storing separately.
 	 * 
 	 * Note: The order of registration controls the order of display.
 	 */
 	public static function register_settings() {
-
+		
+		// * * * * * * * * * * * * * * * * * * * * * * *
 		// AUTOMAGIC META BOX
+		// * * * * * * * * * * * * * * * * * * * * * * *
 		MetaBox::register_setting( '_nv_example_meta_field', 'magic-meta-box', array(
-			'label'       => __( 'Example Field:', 'nvLangScope' ),
+			'label'       => __( 'Example Field', 'nvLangScope' ),
 			'placeholder' => __( 'Enter a value…', 'nvLangScope' ),
 		) );
 		MetaBox::register_setting( '_nv_example_meta_checkboxes', 'magic-meta-box', array(
 			'type'  => 'checkbox',
-			'label' => __( 'Example Checklist:', 'nvLangScope' ),
+			'label' => __( 'Example Checklist', 'nvLangScope' ),
 			'list'  => array(
 				'cb1' => __( 'Item 1', 'nvLangScope' ),
 				'cb2' => __( 'Item 2', 'nvLangScope' ),
@@ -108,7 +111,7 @@ class NV_Example_Meta_Boxes {
 		) );
 		MetaBox::register_setting( '_nv_example_meta_radio', 'magic-meta-box', array(
 			'type'  => 'radio',
-			'label' => __( 'Example Radio List:', 'nvLangScope' ),
+			'label' => __( 'Example Radio List', 'nvLangScope' ),
 			'list'  => array(
 				'radio1' => __( 'Item 1', 'nvLangScope' ),
 				'radio2' => __( 'Item 2', 'nvLangScope' ),
@@ -116,21 +119,29 @@ class NV_Example_Meta_Boxes {
 			),
 			'value' => 'radio1', // which list item(s) to select by default
 		) );
-		MetaBox::register_setting( '_nv_example_meta_textarea', 'magic-meta-box', array(
+		MetaBox::register_setting( 'example_serialized_checkbox', 'magic-meta-box', array(
+			'type'  => 'checkbox',
+			'label' => __( 'Example single checkbox', 'nvLangScope' ),
+			'serialize' => '_nv_example_serialized',
+		) );
+		MetaBox::register_setting( 'example_serialized_textarea', 'magic-meta-box', array(
 			'type'  => 'textarea',
-			'label' => __( 'Example Textarea:', 'nvLangScope' ),
+			'label' => __( 'Example Textarea', 'nvLangScope' ),
 			'placeholder' => __('Your text goes here!','nvLangScope'),
 			'howto' => __( 'You can add a paragraph of help text below any setting.', 'nvLangScope' ),
+			'serialize' => '_nv_example_serialized',
 		) );
 
+		// * * * * * * * * * * * * * * * * * * * * * * *
 		// CUSTOM (HAND-CRAFTED) META BOX
+		// * * * * * * * * * * * * * * * * * * * * * * *
 		MetaBox::register_setting( '_nv_example_meta_field2', 'custom-meta-box', array(
-			'label'       => __( 'Example Field:', 'nvLangScope' ),
+			'label'       => __( 'Example Field', 'nvLangScope' ),
 			'placeholder' => __( 'Enter a value…', 'nvLangScope' ),
 		) );
 		MetaBox::register_setting( '_nv_example_meta_dropdown', 'custom-meta-box', array(
 			'type'  => 'select',
-			'label' => __( 'Example Dropdown:', 'nvLangScope' ),
+			'label' => __( 'Example Dropdown', 'nvLangScope' ),
 			'list'  => array(
 				''  => __( '-- Select One --', 'nvLangScope' ),
 				'1' => __( 'Option 1', 'nvLangScope' ),

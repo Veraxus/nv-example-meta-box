@@ -37,7 +37,7 @@ class MetaBox {
 
 
 	/**
-	 * Used to register your custom settings. 
+	 * Used to register your custom settings.
 	 * @param       $meta_key The key that will be used to save the data in the db (also used for id and name attributes)
 	 * @param       $box_id   The slug of the metabox id that this should be attached to if using magic.
 	 * @param array $args     Arguments used to construct your element.
@@ -62,10 +62,10 @@ class MetaBox {
 			'howto'       => false,
 			// Whether this should be automatically saved
 			'save'        => true,
-			// TODO: A validation expression (regex), if desired
-			'validate'    => false,
-			// TODO:. String. Meta key to use if you want to group this setting with others into a single serialized setting list.
+			// String. Meta key to use if you want to group this setting with others into a single serialized setting list.
 			'serialize'   => false,
+			// TODO: One or more regex expressions to validate against (string or array). If array, use regex for key, error message for value.
+			'validate'    => false,
 		), $args );
 		$NOUVEAU['MetaBoxes'][ $box_id ][ $meta_key ] = $args;
 	}
@@ -78,13 +78,12 @@ class MetaBox {
 	 *
 	 * @return bool
 	 */
-	public static function get_field( $box_id, $meta_key, $post = null, $label = true ) {
+	public static function get_field( $box_id, $meta_key, $serialized = false, $post = null, $label = true ) {
 		global $NOUVEAU;
 
 		// Ensure the meta key is set
 		if ( ! isset( $NOUVEAU['MetaBoxes'][ $box_id ][ $meta_key ] ) ) {
 			trigger_error( __( 'Specified NOUVEAU meta key is not registered', 'nvLangScope' ) );
-
 			return false;
 		}
 
@@ -99,7 +98,17 @@ class MetaBox {
 
 		// Fetch the field and data (if applicable)
 		$field = $NOUVEAU['MetaBoxes'][ $box_id ][ $meta_key ];
-		$data  = get_post_meta( $post, $meta_key, true ); //!is_array($field['list'])
+
+		if ( $serialized ) {
+			// Get serialized data if appropriate and available
+			$data = get_post_meta( $post, $serialized, true );
+			$data = ( isset($data[$meta_key]) ) ? $data[$meta_key] : '';
+		}
+		else {
+			// Singular data
+			$data  = get_post_meta( $post, $meta_key, true ); //!is_array($field['list'])
+		}
+
 		$item  = '';
 
 		if ( $label ) {
@@ -116,7 +125,7 @@ class MetaBox {
 			case 'hidden':
 				$item .= MetaBox\HtmlTags::inputHidden( $field['meta_key'], ( $data ) ? $data : $field['value'] );
 				break;
-			
+
 			// ---------------------------------------------------------------------------
 			// == TEXTAREA ===============================================================
 			case 'textarea':
@@ -175,7 +184,7 @@ class MetaBox {
 						$loops ++;
 					}
 				} else {
-					$item .= MetaBox\HtmlTags::label( MetaBox\HtmlTags::inputCheckbox( $field['meta_key'] ) . ' ' . $field['label'], array() );
+					$item .= MetaBox\HtmlTags::label( MetaBox\HtmlTags::inputCheckbox( $field['meta_key'], $data ) . ' ' . $field['label'], array() );
 				}
 				break;
 
@@ -211,7 +220,12 @@ class MetaBox {
 
 			// Loop through each registered setting for this meta box…
 			foreach ( $NOUVEAU['MetaBoxes'][ $args['id'] ] as $field ) {
-				$item = sprintf( '<p>%s</p>', self::get_field( $args['id'], $field['meta_key'], $post ) );
+				$item = sprintf( '<p>%s</p>', self::get_field(
+					$args['id'],
+					$field['meta_key'],
+					($field['serialize']) ? $field['serialize'] : false,
+					$post
+				) );
 
 				if ( $field['howto'] ) {
 					$item .= sprintf( '<p class="howto">%s</p>', $field['howto'] );
@@ -225,7 +239,7 @@ class MetaBox {
 			wp_nonce_field( $args['id'], $args['id'] . '_nonce' );
 			$output .= ob_get_clean();
 		};
-		
+
 		// Wrap the whole thing in a magic metabox element so we can isolate it with CSS
 		$output = sprintf('<div class="magic-metabox">%s</div>', $output);
 
@@ -244,29 +258,33 @@ class MetaBox {
 		foreach ( $NOUVEAU['MetaBoxes'] as $mb_key => $mb_fields ) {
 
 			if ( self:: verify_save( $mb_key . '_nonce', $mb_key, $post_id ) ) {
+
+				$serialized = array();
+
 				// Fetch all fields in current box
-				foreach ( $mb_fields as $field ) {
-					
+				foreach ( $mb_fields as $field_key => $field ) {
+
 					// If save isn't true, skip
 					if ( !$field['save'] ) {
 						continue;
 					}
-					
-					if ( isset( $_POST[ $field['meta_key'] ] ) ) {
-						$new_value = $_POST[ $field['meta_key'] ];
-					} 
-					else {
-						delete_post_meta( $post_id, $field['meta_key'] );
-						continue;
+
+					// If the value is set, save; otherwise, delete the setting
+					if ( isset( $_POST[ $field_key ] ) ) {
+						$new_value = $_POST[ $field_key ];
 					}
 
+					// Process the form data as appropriate
 					switch ( $field['type'] ) {
 						case 'checkbox':
 						case 'radio':
 							if ( is_array( $new_value ) && $field['list'] ) {
-								// Arrays are automatically serialized, so no sanitizing
-								break;
+								// Do nothing. Array will be auto-serialized
 							}
+							else {
+								$new_value = isset( $_POST[ $field_key ] );
+							}
+							break;
 						case 'select':
 						case 'input':
 						case 'text':
@@ -276,10 +294,40 @@ class MetaBox {
 							break;
 					}
 
-					// save
-					update_post_meta( $post_id, $field['meta_key'], $new_value );
+					// If serialize is not enabled, save
+					if ( $field['serialize'] ) {
+						// Create serialization container so we know to process this serialization key after the loop
+						if ( !isset( $serialized[ $field['serialize'] ] ) ) {
+							$serialized[ $field['serialize'] ] = array();
+						}
+						// Store non-empty values temporarily in array for serialization
+						if ( $new_value != '' ) {
+							$serialized[ $field['serialize'] ][ $field_key ] = $new_value;
+						}
+					}
+					else {
+						if ( !empty($new_value) ) {
+							update_post_meta( $post_id, $field_key, $new_value );
+						}
+						else {
+							delete_post_meta( $post_id, $field_key );
+						}
+					}
 
 				}
+
+				// Save the serialized data
+				if ( !empty($serialized) ) {
+					foreach ( $serialized as $serial_key => $serial_data ) {
+						if ( !empty($serial_data) ) {
+							update_post_meta( $post_id, $serial_key, $serial_data );
+						}
+						else {
+							delete_post_meta( $post_id, $serial_key );
+						}
+					}
+				}
+
 			}
 
 		}
